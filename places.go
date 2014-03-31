@@ -52,11 +52,12 @@ func (p *Place) update() {
 	defer session.Close()
 
 	coll := session.DB("gotour").C("places")
-	err = coll.Update(bson.M{"guid": p.Guid}, bson.M{"$set": bson.M{"lat": p.Lat, "lng": p.Lng}})
+	err = coll.Update(bson.M{"guid": p.Guid}, bson.M{"$set": bson.M{"lat": p.Lat, "lng": p.Lng, "address": p.Address}})
 
 	if err != nil {
 		panic(err)
 	}
+	places[p.Guid] = p
 }
 
 func (p *Place) insert() {
@@ -75,10 +76,12 @@ func (p *Place) insert() {
 	}
 
 	// Add yourself to the global places array. Turrible.
-	places = append(places, p)
+	places[p.Guid] = p
 }
 
-func get_places(places []*Place) []*Place {
+func get_places() map[string]*Place {
+	var places []*Place
+	place_map := make(map[string]*Place)
 	session, err := mgo.Dial("localhost")
 	if err != nil {
 		panic(err)
@@ -91,5 +94,9 @@ func get_places(places []*Place) []*Place {
 	if err != nil {
 		panic(err)
 	}
-	return places
+	for i := range places {
+		place_map[places[i].Guid] = places[i]
+		log.Println(places[i])
+	}
+	return place_map
 }

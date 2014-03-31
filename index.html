@@ -57,7 +57,12 @@
       hover_icon = Helpers.icon('8D2D8D', '');
 
       // No idea where this belongs. Create all of the existing places
-      places.forEach(function(p, index) {Place.create(p) })
+      if(places != null) {
+        for(var p in places) {
+          console.log(p)
+          Place.create(places[p])
+        }
+      }
 
       start_websocket()
       function start_websocket() {
@@ -126,14 +131,8 @@
       <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
           <ul class="nav nav-sidebar">
-{{range $p := .Places}}
-<li data-guid="{{$p.Guid}}">
-  <span>{{$p.Address}}</span>
-  <span>{{printf "%.3f" $p.Lat}}</span>
-  <span>{{printf "%.3f" $p.Lng}}</span>
-</li>
-{{end}}
-</ul>
+
+          </ul>
         </div>
         <div id="map_canvas" class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
         </div>

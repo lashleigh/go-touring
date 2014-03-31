@@ -9,11 +9,11 @@ import (
 
 var (
 	templates *template.Template
-	places    []*Place
+	places    map[string]*Place
 )
 
 type Index struct {
-	Places    []*Place
+	Places    map[string]*Place
 	PlacesStr string
 	Host      string
 }
@@ -29,7 +29,7 @@ func indexHandler(c http.ResponseWriter, req *http.Request) {
 
 func main() {
 	templates = template.Must(template.ParseFiles("index.html"))
-	places = get_places(places)
+	places = get_places()
 
 	go h.run()
 	http.HandleFunc("/", indexHandler)

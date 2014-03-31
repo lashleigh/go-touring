@@ -1,14 +1,15 @@
 Handlebars.registerHelper('round', function(sig, num) {
+  if(num == undefined) {return }
   return num.toFixed(sig);
 });
 
 var Place = {};
 (function() {
   var source = '<li data-guid="{{guid}}">'+
-    '<span>{{address}}</span>'+
-    '<span>{{round 3 lat}}</span>'+
-    '<span>{{round 3 lng}}</span>'+
-  '</li>';
+                 '<span>{{address}}</span>'+
+                 '<span>{{round 3 lat}}</span>'+
+                 '<span>{{round 3 lng}}</span>'+
+               '</li>';
 
   var template = Handlebars.compile(source);
 
@@ -38,7 +39,21 @@ var Place = {};
     $("li[data-guid="+place.guid+"]").html(Place.list_element(place))
   }
 
+  this.update_address = function(place, address) {
+      var message = {}
+      message['action'] = 'update'
+      message['place'] = place
+      message['place']['address'] = address
+      Config.conn.send(JSON.stringify(message));
+  }
+  
+  // TODO rename this. This method is more about putting the
+  // existing place on the map and setting up even handlers,
+  // no about creating places.
   this.create = function(place) {
+    places[place.guid] = place
+    $('ul.nav').append(Place.list_element(place))
+
     var marker = new google.maps.Marker({
       map: map,
       draggable: true,
@@ -52,6 +67,7 @@ var Place = {};
       message['place']['guid'] = marker.title
       message['place']['lat'] = evt.latLng.lat()
       message['place']['lng'] = evt.latLng.lng()
+      Helpers.reverse_geocode(message['place'], evt.latLng)
       Config.conn.send(JSON.stringify(message));
     });
     markers[place.guid] = marker;
@@ -62,12 +78,13 @@ var Place = {};
       strokeWeight: 3
     });
     if(place.lat && place.lng) {
-      var latlng = new google.maps.LatLng(place.lat, place.lng);
-      marker.setPosition(latlng);
+      var latLng = new google.maps.LatLng(place.lat, place.lng);
+      marker.setPosition(latLng);
       if(!place.address) {
         console.log("no address");
         //reverse_geocode(place, latlng);
       }
+      Helpers.reverse_geocode(place, latLng)
     } else {
       console.log("no location");
       //geocode(place);

@@ -47,7 +47,8 @@ var Helpers = {};
       }
     })
   }
-  function reverse_geocode(day, latlng) {
+
+  this.reverse_geocode = function(place, latlng) {
     geocoder.geocode({location: latlng}, function(res, status) {
       if(status === google.maps.GeocoderStatus.OK) {
         var result = res[0].address_components;
@@ -56,12 +57,15 @@ var Helpers = {};
           if(result[i].types[0]=="administrative_area_level_1"){info.push(result[i].short_name)}
           if(result[i].types[0]=="locality"){info.unshift(result[i].long_name)}
         }
-        manageTrip.updateDay(day._id, {$set: {address: info.join(', ')}})
+        Place.update_address(place, info.join(', '))
+        console.log(info)
+        //manageTrip.updateDay(day._id, {$set: {address: info.join(', ')}})
       } else {
         console.log(status);
       }
     })
   }
+
   function myDecodePath(path) {
     path = path || '';
     return google.maps.geometry.encoding.decodePath(path);
