@@ -1,5 +1,17 @@
+Handlebars.registerHelper('round', function(sig, num) {
+  return num.toFixed(sig);
+});
+
 var Place = {};
 (function() {
+  var source = '<li data-guid="{{guid}}">'+
+    '<span>{{address}}</span>'+
+    '<span>{{round 3 lat}}</span>'+
+    '<span>{{round 3 lng}}</span>'+
+  '</li>';
+
+  var template = Handlebars.compile(source);
+
   this.new_from_event = function(evt) {
     var message = {}
     message['action'] = 'create'
@@ -10,14 +22,20 @@ var Place = {};
     return message
   }
 
+  this.list_element = function(place) {
+    return template(place)
+  }
+
   this.destroy = function(place) {
-  
+
   }
 
   this.update = function(place) {
     var latlng = new google.maps.LatLng(place.lat, place.lng);
     var marker = markers[place.guid]
     marker.setPosition(latlng);
+
+    $("li[data-guid="+place.guid+"]").html(Place.list_element(place))
   }
 
   this.create = function(place) {
@@ -27,15 +45,15 @@ var Place = {};
       title: place.guid,
     });
     new google.maps.event.addListener(marker, 'dragend', function(evt) {
-      console.log(marker, evt) 
+      console.log(marker, evt)
       var message = {}
       message['action'] = 'update'
       message['place'] = {}
-      message['place']['guid'] = marker.title 
+      message['place']['guid'] = marker.title
       message['place']['lat'] = evt.latLng.lat()
       message['place']['lng'] = evt.latLng.lng()
       Config.conn.send(JSON.stringify(message));
-    })    
+    });
     markers[place.guid] = marker;
     marker.day_id = place.guid;
     marker.polyline = new google.maps.Polyline({
@@ -47,7 +65,7 @@ var Place = {};
       var latlng = new google.maps.LatLng(place.lat, place.lng);
       marker.setPosition(latlng);
       if(!place.address) {
-        console.log("no address")              
+        console.log("no address");
         //reverse_geocode(place, latlng);
       }
     } else {
