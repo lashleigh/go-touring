@@ -52,6 +52,10 @@
       current_icon = Helpers.icon('59308F', '');
       hover_icon = Helpers.icon('8D2D8D', '');
 
+      // No idea where this belongs. Create all of the existing places
+      var places = {{.PlacesStr}};
+      places.forEach(function(p, index) {Place.create(p) })
+
       start_websocket()
       function start_websocket() {
         if(!window["WebSocket"]) {
@@ -59,7 +63,7 @@
           return
         }
 
-        Config.conn = new WebSocket("ws://{{$}}/ws");
+        Config.conn = new WebSocket("ws://{{.Host}}/ws");
         
         // Try to re-establish the connection when it closes.
         // TODO disable event handlers to prevent actions when disconnected?
@@ -119,23 +123,15 @@
       <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
           <ul class="nav nav-sidebar">
-            <li class="active"><a href="#">Overview</a></li>
-            <li><a href="#">Reports</a></li>
-            <li><a href="#">Analytics</a></li>
-            <li><a href="#">Export</a></li>
-          </ul>
-          <ul class="nav nav-sidebar">
-            <li><a href="">Nav item</a></li>
-            <li><a href="">Nav item again</a></li>
-            <li><a href="">One more nav</a></li>
-            <li><a href="">Another nav item</a></li>
-            <li><a href="">More navigation</a></li>
-          </ul>
-          <ul class="nav nav-sidebar">
-            <li><a href="">Nav item again</a></li>
-            <li><a href="">One more nav</a></li>
-            <li><a href="">Another nav item</a></li>
-          </ul>
+{{range $p := .Places}}
+<li>
+  <span>{{$p.Address}}</span>
+  <span>{{printf "%3f" $p.Lat}}</span>
+  <span>{{printf "%3f" $p.Lng}}</span>
+  <span style="display:none;">{{$p.Guid}}</span>
+</li>
+{{end}}
+</ul>
         </div>
         <div id="map_canvas" class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
         </div>

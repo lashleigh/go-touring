@@ -27,12 +27,12 @@ type Day struct {
 	//Waypoints []
 }
 
-func routeByAction(m *Message) {
+func (m *Message) route_place() {
 	switch m.Action {
 	case "create":
-		create(m.Place)
+		m.Place.insert()
 	case "update":
-		update(m.Place)
+		m.Place.update()
 	case "destroy":
 		// TODO
 	default:
@@ -42,7 +42,7 @@ func routeByAction(m *Message) {
 
 // If the place already exists then we update the coords
 // if the place doesn't exist then we create it
-func update(p *Place) {
+func (p *Place) update() {
 	log.Println("UPDATE", p)
 
 	session, err := mgo.Dial("localhost")
@@ -59,7 +59,7 @@ func update(p *Place) {
 	}
 }
 
-func create(p *Place) {
+func (p *Place) insert() {
 	log.Println("CREATE", p)
 	session, err := mgo.Dial("localhost")
 	if err != nil {
@@ -73,4 +73,23 @@ func create(p *Place) {
 	if err != nil {
 		panic(err)
 	}
+
+	// Add yourself to the global places array. Turrible.
+	places = append(places, p)
+}
+
+func get_places(places []*Place) []*Place {
+	session, err := mgo.Dial("localhost")
+	if err != nil {
+		panic(err)
+	}
+	defer session.Close()
+
+	coll := session.DB("gotour").C("places")
+	err = coll.Find(bson.M{}).All(&places)
+
+	if err != nil {
+		panic(err)
+	}
+	return places
 }

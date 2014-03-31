@@ -18,15 +18,20 @@ type connection struct {
 func (c *connection) reader() {
 	for {
 		var message *Message
-		log.Println(message)
 
 		// TODO figure out why EOF makes everything explode
 		err := c.ws.ReadJSON(&message)
-		log.Println("New Place", message)
+		if message == nil {
+			return
+		}
+
 		if err != nil {
 			panic(err)
 		}
-		routeByAction(message)
+
+		log.Println("Connection reader: ", message)
+		message.route_place()
+
 		res, err := json.Marshal(message)
 		if err != nil {
 			panic(err)
